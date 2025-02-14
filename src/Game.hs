@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Game
   ( GameState (..),
     -- Start lenses
