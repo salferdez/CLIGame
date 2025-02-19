@@ -1,5 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
+-- |
+-- Module      :  CLIGame.Character
+-- Maintainer  :  Salvador Fernández <salferdez@gmail.com>
 module Game
   ( GameState (..),
     -- Start lenses
@@ -34,6 +37,7 @@ import System.IO (hFlush, stdout)
 import System.Random (randomRIO)
 import Text.Read (readMaybe)
 
+-- | Represents current game state
 data GameState = GameState
   { _character :: Character,
     _monsterHP :: Int
@@ -41,25 +45,28 @@ data GameState = GameState
 
 makeLenses ''GameState
 
+-- | Just for ghci testing
 mummyCharacter :: Character
 mummyCharacter =
   Character
     {
     }
 
+-- | ghci testing
 mummyState :: GameState
 mummyState = GameState {_character = mummyCharacter, _monsterHP = 0}
 
--- Used for calculating random damage or hp
+-- | Used for calculating random damage or hp
 valInRange :: Int -> Int -> IO Int
 valInRange start end = randomRIO (start, end)
 
+-- | Takes current gamestate (monsterHP set to 0 or undefined), returns updated gamestate with calculated monsterHP
 initializeMonsterHP :: GameState -> Monster -> IO GameState
 initializeMonsterHP s m = do
   hp <- valInRange (m ^. minMonsterDamage) (m ^. maxMonsterDamage)
   return $ set monsterHP hp s
 
--- Parsing and applying command ( ATTACK OR RUN )
+-- | Parsing and applying command ( ATTACK OR RUN )
 playerCommand :: GameState -> Monster -> IO GameState
 playerCommand s m = do
   if (s ^. (character . hp)) <= 0
@@ -82,6 +89,7 @@ playerCommand s m = do
           putStrLn "Command not accepted. Try again"
           playerCommand s m
 
+-- | \'Runs\' attack command
 attack :: GameState -> Monster -> IO GameState
 attack s m = do
   playerDamage <- valInRange (s ^. character . minDamage) (s ^. character . maxDamage)
@@ -97,25 +105,27 @@ attack s m = do
       let newState = set character newPlayer (set monsterHP (s ^. monsterHP - playerDamage) s)
       playerCommand newState m
 
+-- | \'Runs\' run command
 run :: GameState -> Monster -> IO GameState
 run s m = do
   putStrLn $ "You managed to outrun the " ++ m ^. monsterName ++ " and the horrors beyond"
   return s
 
--- Used for setting combat
+-- | Used for setting combat
 encounter :: GameState -> Monster -> IO GameState
 encounter s m = do
   putStrLn $ "You stumble upon a " ++ m ^. monsterName
   newerState <- initializeMonsterHP s m
   playerCommand newerState m
 
+-- | Initializes player (calls Character.playerCharacter) and returns updated Gamestate
 initializePlayer :: IO GameState
 initializePlayer = do
   character <- playerCharacter
   let newState = GameState {_character = character, _monsterHP = 100}
   return newState
 
--- Game loop until player dies or runs. Keeps track of # of monsters killed
+-- | Game loop until player dies or runs. Keeps track of # of monsters killed
 gauntlet :: Int -> GameState -> IO (Int, GameState)
 gauntlet record s = do
   monsters <- readMonsters
@@ -133,7 +143,7 @@ gauntlet record s = do
         else do
           return (record, newState)
 
--- Runs game loop, prints record to file, returns final gamestate
+-- | Runs game loop, prints record to file, sort records according to # of kills, returns final gamestate
 loop :: IO GameState
 loop = do
   state <- initializePlayer
@@ -144,13 +154,14 @@ loop = do
   readAndSortRecords "./src/records.txt"
   return $ snd pair
 
--- Format printed to text file
+-- | Format printed to text file
 formatRecord :: GameState -> Int -> String
 formatRecord state kills = "RECORD || Character: " ++ charName ++ " Class: " ++ charClass ++ " Kills: " ++ show kills
   where
     charName = state ^. (character . name)
     charClass = show (state ^. (character . characterClass))
 
+-- | Writes formated record to file
 writeRecord :: FilePath -> GameState -> Int -> IO ()
 writeRecord file state kills = appendFile file (formatRecord state kills ++ "\n")
 
@@ -173,7 +184,7 @@ extractKills words =
     (_ : kills : _) -> readMaybe kills
     _ -> Nothing
 
--- parseRecord extracts name, class, and kills from the input string (to be used in a line from file)
+-- | parseRecord extracts name, class, and kills from the input string (to be used in a line from file)
 parseRecords :: String -> Maybe (String, CharacterClass, Int)
 parseRecords line = do
   let parts = words line
@@ -182,7 +193,7 @@ parseRecords line = do
   killsPart <- extractKills parts
   return (namePart, classPart, killsPart)
 
--- Convert parsed records (String, CharacterClass, Int) into GameState and apply formatRecord
+-- | Convert parsed records (String, CharacterClass, Int) into GameState and apply formatRecord
 formatSortedRecord :: (String, CharacterClass, Int) -> String
 formatSortedRecord (name, characterClass, kills) =
   let dummyCharacter =
@@ -191,12 +202,12 @@ formatSortedRecord (name, characterClass, kills) =
             _hp = 100,
             _minDamage = 10,
             _maxDamage = 20,
-            _CharacterClass = characterClass
+            _characterClass = characterClass
           }
       dummyGameState = GameState dummyCharacter 50
    in formatRecord dummyGameState kills
 
--- Read and sort records based on kills
+-- | Read and sort records based on kills
 readAndSortRecords :: FilePath -> IO ()
 readAndSortRecords file = do
   -- Read the file contents
