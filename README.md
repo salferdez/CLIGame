@@ -8,6 +8,7 @@ There are still many features yet to be implemented. A list of some I've managed
   +  Encountering random monsters, configurable by adding a new field in ./src/monsters.txt following specified rules
 * Use of Lens library for simplifying work with records
 * Use of IO and Maybe monads
+* Use of Haddock for generating documentation
 
 * Goals :
   + Implementing more suggested features
