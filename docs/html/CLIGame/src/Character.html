@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-incomplete-patterns #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-name-shadowing #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK show-extensions #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Module      :  CLIGame.Character</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Maintainer  :  Salvador Fern&#225;ndez &lt;salferdez@gmail.com&gt;</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Character</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier">Character</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-comment">-- Lenses</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Character.html#name"><span class="hs-identifier">name</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Character.html#hp"><span class="hs-identifier">hp</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Character.html#minDamage"><span class="hs-identifier">minDamage</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Character.html#maxDamage"><span class="hs-identifier">maxDamage</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Character.html#characterClass"><span class="hs-identifier">characterClass</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-comment">-- End lenses</span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Character.html#CharacterClass"><span class="hs-identifier">CharacterClass</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Character.html#initializeCharacter"><span class="hs-identifier">initializeCharacter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Character.html#playerCharacter"><span class="hs-identifier">playerCharacter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Lens</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.Read</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">readMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- Read needed for readMaybe in Game module (better derive it)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Class of character</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="CharacterClass"><span class="annot"><a href="Character.html#CharacterClass"><span class="hs-identifier hs-var">CharacterClass</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="FIGHTER"><span class="annot"><a href="Character.html#FIGHTER"><span class="hs-identifier hs-var">FIGHTER</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ROGUE"><span class="annot"><a href="Character.html#ROGUE"><span class="hs-identifier hs-var">ROGUE</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SORCERER"><span class="annot"><a href="Character.html#SORCERER"><span class="hs-identifier hs-var">SORCERER</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Used for testing, has 1 HP</span></span><span>
+</span><span id="line-35"></span><span>    </span><span id="MUMMY"><span class="annot"><a href="Character.html#MUMMY"><span class="hs-identifier hs-var">MUMMY</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679114348"><span id="local-6989586621679114350"><span id="local-6989586621679114354"><span class="annot"><span class="annottext">Int -&gt; CharacterClass -&gt; ShowS
+[CharacterClass] -&gt; ShowS
+CharacterClass -&gt; String
+(Int -&gt; CharacterClass -&gt; ShowS)
+-&gt; (CharacterClass -&gt; String)
+-&gt; ([CharacterClass] -&gt; ShowS)
+-&gt; Show CharacterClass
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CharacterClass -&gt; ShowS
+showsPrec :: Int -&gt; CharacterClass -&gt; ShowS
+$cshow :: CharacterClass -&gt; String
+show :: CharacterClass -&gt; String
+$cshowList :: [CharacterClass] -&gt; ShowS
+showList :: [CharacterClass] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679114358"><span id="local-6989586621679114360"><span class="annot"><span class="annottext">CharacterClass -&gt; CharacterClass -&gt; Bool
+(CharacterClass -&gt; CharacterClass -&gt; Bool)
+-&gt; (CharacterClass -&gt; CharacterClass -&gt; Bool) -&gt; Eq CharacterClass
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CharacterClass -&gt; CharacterClass -&gt; Bool
+== :: CharacterClass -&gt; CharacterClass -&gt; Bool
+$c/= :: CharacterClass -&gt; CharacterClass -&gt; Bool
+/= :: CharacterClass -&gt; CharacterClass -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679114365"><span id="local-6989586621679114368"><span id="local-6989586621679114371"><span id="local-6989586621679114378"><span class="annot"><span class="annottext">ReadPrec [CharacterClass]
+ReadPrec CharacterClass
+Int -&gt; ReadS CharacterClass
+ReadS [CharacterClass]
+(Int -&gt; ReadS CharacterClass)
+-&gt; ReadS [CharacterClass]
+-&gt; ReadPrec CharacterClass
+-&gt; ReadPrec [CharacterClass]
+-&gt; Read CharacterClass
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS CharacterClass
+readsPrec :: Int -&gt; ReadS CharacterClass
+$creadList :: ReadS [CharacterClass]
+readList :: ReadS [CharacterClass]
+$creadPrec :: ReadPrec CharacterClass
+readPrec :: ReadPrec CharacterClass
+$creadListPrec :: ReadPrec [CharacterClass]
+readListPrec :: ReadPrec [CharacterClass]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Represents player's character</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="Character"><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-var">Character</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Character"><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-var">Character</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="_name"><span class="annot"><span class="annottext">Character -&gt; String
+</span><a href="Character.html#_name"><span class="hs-identifier hs-var hs-var">_name</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="_hp"><span class="annot"><span class="annottext">Character -&gt; Int
+</span><a href="Character.html#_hp"><span class="hs-identifier hs-var hs-var">_hp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="_minDamage"><span class="annot"><span class="annottext">Character -&gt; Int
+</span><a href="Character.html#_minDamage"><span class="hs-identifier hs-var hs-var">_minDamage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="_maxDamage"><span class="annot"><span class="annottext">Character -&gt; Int
+</span><a href="Character.html#_maxDamage"><span class="hs-identifier hs-var hs-var">_maxDamage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="_characterClass"><span class="annot"><span class="annottext">Character -&gt; CharacterClass
+</span><a href="Character.html#_characterClass"><span class="hs-identifier hs-var hs-var">_characterClass</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Character.html#CharacterClass"><span class="hs-identifier hs-type">CharacterClass</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679114388"><span id="local-6989586621679114400"><span id="local-6989586621679114404"><span class="annot"><span class="annottext">Int -&gt; Character -&gt; ShowS
+[Character] -&gt; ShowS
+Character -&gt; String
+(Int -&gt; Character -&gt; ShowS)
+-&gt; (Character -&gt; String)
+-&gt; ([Character] -&gt; ShowS)
+-&gt; Show Character
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Character -&gt; ShowS
+showsPrec :: Int -&gt; Character -&gt; ShowS
+$cshow :: Character -&gt; String
+show :: Character -&gt; String
+$cshowList :: [Character] -&gt; ShowS
+showList :: [Character] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679114408"><span id="local-6989586621679114418"><span class="annot"><span class="annottext">Character -&gt; Character -&gt; Bool
+(Character -&gt; Character -&gt; Bool)
+-&gt; (Character -&gt; Character -&gt; Bool) -&gt; Eq Character
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Character -&gt; Character -&gt; Bool
+== :: Character -&gt; Character -&gt; Bool
+$c/= :: Character -&gt; Character -&gt; Bool
+/= :: Character -&gt; Character -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span id="name"><span id="hp"><span id="minDamage"><span id="maxDamage"><span id="characterClass"><span class="hs-identifier">makeLenses</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">Character</span></span></span></span></span></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-comment">{-
+Before
+initializeCharacter @\:\:@ String -&gt; CharacterClass -&gt; Character
+initializeCharacter name characterClass
+  | characterClass == FIGHTER = Character {_name = name, _hp = 100, _minDamage = 3, _maxDamage = 8, _CharacterClass = characterClass}
+  | characterClass == SORCERER = Character {_name = name, _hp = 100, _minDamage = 2, _maxDamage = 12, _CharacterClass = characterClass}
+  | characterClass == ROGUE = Character {_name = name, _hp = 100, _minDamage = 3, _maxDamage = 6, _CharacterClass = characterClass}
+  | characterClass == MUMMY = Character {_name = name, _hp = 1, _minDamage = 0, _maxDamage = 0, _CharacterClass = characterClass}
+-}</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><span class="hs-comment">-- | Creates new Character based on given name and CharcterClass</span></span><span>
+</span><span id="line-61"></span><span class="annot"><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-type">initializeCharacter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Character.html#CharacterClass"><span class="hs-identifier hs-type">CharacterClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span>
+</span><span id="line-62"></span><span id="initializeCharacter"><span class="annot"><span class="annottext">initializeCharacter :: String -&gt; CharacterClass -&gt; Character
+</span><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-var hs-var">initializeCharacter</span></a></span></span><span> </span><span id="local-6989586621679114467"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114467"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#FIGHTER"><span class="hs-identifier hs-var">FIGHTER</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">_name :: String
+</span><a href="Character.html#_name"><span class="hs-identifier hs-var">_name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114467"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_hp :: Int
+</span><a href="Character.html#_hp"><span class="hs-identifier hs-var">_hp</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">100</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_minDamage :: Int
+</span><a href="Character.html#_minDamage"><span class="hs-identifier hs-var">_minDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_maxDamage :: Int
+</span><a href="Character.html#_maxDamage"><span class="hs-identifier hs-var">_maxDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">8</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_characterClass :: CharacterClass
+</span><a href="Character.html#_characterClass"><span class="hs-identifier hs-var">_characterClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#FIGHTER"><span class="hs-identifier hs-var">FIGHTER</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-var">initializeCharacter</span></a></span><span> </span><span id="local-6989586621679114468"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114468"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#SORCERER"><span class="hs-identifier hs-var">SORCERER</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">_name :: String
+</span><a href="Character.html#_name"><span class="hs-identifier hs-var">_name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114468"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_hp :: Int
+</span><a href="Character.html#_hp"><span class="hs-identifier hs-var">_hp</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">100</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_minDamage :: Int
+</span><a href="Character.html#_minDamage"><span class="hs-identifier hs-var">_minDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_maxDamage :: Int
+</span><a href="Character.html#_maxDamage"><span class="hs-identifier hs-var">_maxDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">12</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_characterClass :: CharacterClass
+</span><a href="Character.html#_characterClass"><span class="hs-identifier hs-var">_characterClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#SORCERER"><span class="hs-identifier hs-var">SORCERER</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-var">initializeCharacter</span></a></span><span> </span><span id="local-6989586621679114469"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114469"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#ROGUE"><span class="hs-identifier hs-var">ROGUE</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">_name :: String
+</span><a href="Character.html#_name"><span class="hs-identifier hs-var">_name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114469"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_hp :: Int
+</span><a href="Character.html#_hp"><span class="hs-identifier hs-var">_hp</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">100</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_minDamage :: Int
+</span><a href="Character.html#_minDamage"><span class="hs-identifier hs-var">_minDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_maxDamage :: Int
+</span><a href="Character.html#_maxDamage"><span class="hs-identifier hs-var">_maxDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">6</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_characterClass :: CharacterClass
+</span><a href="Character.html#_characterClass"><span class="hs-identifier hs-var">_characterClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#ROGUE"><span class="hs-identifier hs-var">ROGUE</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-var">initializeCharacter</span></a></span><span> </span><span id="local-6989586621679114470"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114470"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#MUMMY"><span class="hs-identifier hs-var">MUMMY</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">_name :: String
+</span><a href="Character.html#_name"><span class="hs-identifier hs-var">_name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114470"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_hp :: Int
+</span><a href="Character.html#_hp"><span class="hs-identifier hs-var">_hp</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_minDamage :: Int
+</span><a href="Character.html#_minDamage"><span class="hs-identifier hs-var">_minDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_maxDamage :: Int
+</span><a href="Character.html#_maxDamage"><span class="hs-identifier hs-var">_maxDamage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_characterClass :: CharacterClass
+</span><a href="Character.html#_characterClass"><span class="hs-identifier hs-var">_characterClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="Character.html#MUMMY"><span class="hs-identifier hs-var">MUMMY</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- | Asks player for character name</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- Calls setCharacter for handling correct class input</span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Character.html#playerCharacter"><span class="hs-identifier hs-type">playerCharacter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span>
+</span><span id="line-70"></span><span id="playerCharacter"><span class="annot"><span class="annottext">playerCharacter :: IO Character
+</span><a href="Character.html#playerCharacter"><span class="hs-identifier hs-var hs-var">playerCharacter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-71"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Insert your character's name: &quot;</span></span><span>
+</span><span id="line-72"></span><span>  </span><span id="local-6989586621679114472"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114472"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO String
+</span><span class="hs-identifier hs-var">getLine</span></span><span>
+</span><span id="line-73"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO Character
+</span><a href="Character.html#setCharacter"><span class="hs-identifier hs-var">setCharacter</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114472"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | Asks player for CharacterClass and calls initializeCharacter if ok.</span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- Else, retries until valid CharacterClass is entered</span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Character.html#setCharacter"><span class="hs-identifier hs-type">setCharacter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Character.html#Character"><span class="hs-identifier hs-type">Character</span></a></span><span>
+</span><span id="line-78"></span><span id="setCharacter"><span class="annot"><span class="annottext">setCharacter :: String -&gt; IO Character
+</span><a href="Character.html#setCharacter"><span class="hs-identifier hs-var hs-var">setCharacter</span></a></span></span><span> </span><span id="local-6989586621679114475"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114475"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Insert your character's class: FIGHTER | SORCERER | ROGUE | MUMMY&quot;</span></span><span>
+</span><span id="line-80"></span><span>  </span><span id="local-6989586621679114476"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114476"><span class="hs-identifier hs-var">classInput</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO String
+</span><span class="hs-identifier hs-var">getLine</span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe CharacterClass
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><span class="hs-identifier hs-var">readMaybe</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114476"><span class="hs-identifier hs-var">classInput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-82"></span><span>    </span><span class="hs-comment">-- Just class -&gt; CLASS IS RESERVED KEYWORD</span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679114477"><span class="annot"><span class="annottext">CharacterClass
+</span><a href="#local-6989586621679114477"><span class="hs-identifier hs-var">characterClass</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Character -&gt; IO Character
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Character -&gt; IO Character) -&gt; Character -&gt; IO Character
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; CharacterClass -&gt; Character
+</span><a href="Character.html#initializeCharacter"><span class="hs-identifier hs-var">initializeCharacter</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114475"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">CharacterClass
+</span><a href="#local-6989586621679114477"><span class="hs-identifier hs-var">characterClass</span></a></span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><span class="annottext">Maybe CharacterClass
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-85"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Command not accepted. Try again.&quot;</span></span><span>
+</span><span id="line-86"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; IO Character
+</span><a href="Character.html#setCharacter"><span class="hs-identifier hs-var">setCharacter</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679114475"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-87"></span></pre></body></html>
