@@ -1,4 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_HADDOCK show-extensions #-}
 
 -- |
 -- Module      :  CLIGame.Character
@@ -21,7 +24,9 @@ where
 import Control.Lens
 import Text.Read (readMaybe)
 
--- | Class of character, read instance needed for readMaybe
+-- Read needed for readMaybe in Game module (better derive it)
+
+-- | Class of character
 data CharacterClass
   = FIGHTER
   | ROGUE
@@ -61,9 +66,10 @@ playerCharacter = do
 -- Else, retries until valid CharacterClass is entered
 setCharacter :: String -> IO Character
 setCharacter name = do
-  putStrLn "Insert your character's class: FIGHTER | SORCERER | ROGUE | MUMMY"
+  putStrLn "Insert your character's class: FIGHTER | SORCERER | ROGUE"
   classInput <- getLine
   case readMaybe classInput of
+    -- Just class -> CLASS IS RESERVED KEYWORD
     Just characterClass -> return $ initializeCharacter name characterClass
     Nothing -> do
       putStrLn "Command not accepted. Try again."
