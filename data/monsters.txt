@@ -1,0 +1,7 @@
+# Name:MinHP:MaxHP:MinDamage:MaxDamage
+# Do not start lines with # or blank space, they will be ignored when parsing
+
+Goblin:2:7:1:4
+Wild Dog:6:9:2:6
+Ogre:8:15:4:8
+Bear:13:25:7:12

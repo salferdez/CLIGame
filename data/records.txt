@@ -1,0 +1,5 @@
+RECORD || Character: Test Class: FIGHTER Kills: 9
+RECORD || Character: Test Class: FIGHTER Kills: 5
+RECORD || Character: Test Class: FIGHTER Kills: 5
+RECORD || Character: Test Class: FIGHTER Kills: 5
+RECORD || Character: Test Class: ROGUE Kills: 1

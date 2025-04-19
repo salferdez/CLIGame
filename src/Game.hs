@@ -1,4 +1,14 @@
+{-# HLINT ignore "Redundant if" #-}
+{-# HLINT ignore "Use uncurry" #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-missing-fields #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_GHC -Wno-type-defaults #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant return" #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- |
 -- Module      :  CLIGame.Character
@@ -150,8 +160,8 @@ loop = do
   pair <- gauntlet 0 state
   let kills = fst pair
   -- Expected to be run from directory 'CLIGame'
-  writeRecord "./src/records.txt" state kills
-  readAndSortRecords "./src/records.txt"
+  writeRecord "./data/records.txt" state kills
+  readAndSortRecords "./data/records.txt"
   return $ snd pair
 
 -- | Format printed to text file

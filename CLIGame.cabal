@@ -54,6 +54,12 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
+-- Base directory for data files.
+data-dir:            data
+
+-- Files to be installed with the package and available at runtime.
+data-files:         *.txt 
+
 library
     -- Import common warning flags.
     import:           warnings

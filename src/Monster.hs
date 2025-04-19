@@ -1,4 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# HLINT ignore "Eta reduce" #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 -- |
 -- Module      :  CLIGame.Character
@@ -25,8 +29,8 @@ where
 import Control.Lens
 import Data.List (isPrefixOf)
 import Data.Maybe (mapMaybe)
-import System.Random
 import System.Exit
+import System.Random
 import Text.Read (readMaybe)
 
 -- | Represents player's enemies
@@ -80,7 +84,7 @@ parseMonsters input =
 -- | Read file, parse monsters, return list of monsters
 readMonsters :: IO [Monster]
 readMonsters = do
-  let pathFile = "./src/monsters.txt"
+  let pathFile = "./data/monsters.txt"
   content <- readFile pathFile
   let monsters = parseMonsters content
   return monsters
