@@ -26,6 +26,7 @@ import Control.Lens
 import Data.List (isPrefixOf)
 import Data.Maybe (mapMaybe)
 import System.Random
+import System.Exit
 import Text.Read (readMaybe)
 
 -- | Represents player's enemies
@@ -98,4 +99,7 @@ extract ioMaybe = do
   case maybeVal of
     Just x -> return x
     -- This should never happen
-    Nothing -> error "extract encountered Nothing"
+    -- Graceful termination
+    Nothing -> do
+      putStrLn "extract encountered empty list"
+      exitFailure
