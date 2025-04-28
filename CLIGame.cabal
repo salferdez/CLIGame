@@ -65,7 +65,7 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Game, Character, Monster
+    exposed-modules:  Game, Character, Monster, HUD, GameState
 
     -- Modules included in this library but not exported.
     -- other-modules:

@@ -14,12 +14,7 @@
 -- Module      :  CLIGame.Character
 -- Maintainer  :  Salvador Fernández <salferdez@gmail.com>
 module Game
-  ( GameState (..),
-    -- Start lenses
-    character,
-    monsterHP,
-    -- End lenses
-    valInRange,
+  ( valInRange,
     initializeMonsterHP,
     playerCommand,
     attack,
@@ -41,19 +36,12 @@ import Control.Lens
 import Data.List (sortBy)
 import Data.Maybe (mapMaybe)
 import Data.Ord (comparing)
+import GameState
+import HUD
 import Monster
 import System.Directory (renameFile)
-import System.IO (hFlush, stdout)
 import System.Random (randomRIO)
 import Text.Read (readMaybe)
-
--- | Represents current game state
-data GameState = GameState
-  { _character :: Character,
-    _monsterHP :: Int
-  }
-
-makeLenses ''GameState
 
 -- | Just for ghci testing
 mummyCharacter :: Character
@@ -79,18 +67,12 @@ initializeMonsterHP s m = do
 -- | Parsing and applying command ( ATTACK OR RUN )
 playerCommand :: GameState -> Monster -> IO GameState
 playerCommand s m = do
-  if (s ^. (character . hp)) <= 0
+  if s ^. (character . hp) <= 0
     then do
-      putStrLn $ "[" ++ s ^. (character . name) ++ ": 0/100]"
-      putStrLn $ "The " ++ m ^. monsterName ++ " killed you"
+      deathMessage s m
       return s
     else do
-      putStrLn "What do you do? ATTACK or RUN?"
-      -- Formatting may cause issues
-      putStr $ "[" ++ s ^. (character . name) ++ ": " ++ show (s ^. (character . hp)) ++ "/100]> "
-      -- Should display prompt and read player's input in same line
-      -- Flushing stdout just in case
-      hFlush stdout
+      actionMessage s
       line <- getLine
       case words line of
         ["ATTACK"] -> attack s m
@@ -103,14 +85,14 @@ playerCommand s m = do
 attack :: GameState -> Monster -> IO GameState
 attack s m = do
   playerDamage <- valInRange (s ^. character . minDamage) (s ^. character . maxDamage)
-  putStrLn $ "You attack for " ++ show playerDamage ++ " damage"
+  playerAttackMessage playerDamage
   if (s ^. monsterHP) - playerDamage <= 0
     then do
       let newState = set monsterHP 0 s
       return newState
     else do
       monsterDamage <- valInRange (m ^. minMonsterDamage) (m ^. maxMonsterDamage)
-      putStrLn $ "The " ++ m ^. monsterName ++ " attacks you for " ++ show monsterDamage ++ " damage"
+      monsterAttackMessage m monsterDamage
       let newPlayer = set hp (s ^. character . hp - monsterDamage) (s ^. character)
       let newState = set character newPlayer (set monsterHP (s ^. monsterHP - playerDamage) s)
       playerCommand newState m
@@ -118,13 +100,13 @@ attack s m = do
 -- | \'Runs\' run command
 run :: GameState -> Monster -> IO GameState
 run s m = do
-  putStrLn $ "You managed to outrun the " ++ m ^. monsterName ++ " and the horrors beyond"
+  playerRunMessage m
   return s
 
 -- | Used for setting combat
 encounter :: GameState -> Monster -> IO GameState
 encounter s m = do
-  putStrLn $ "You stumble upon a " ++ m ^. monsterName
+  encounterMessage m
   newerState <- initializeMonsterHP s m
   playerCommand newerState m
 
@@ -143,7 +125,7 @@ gauntlet record s = do
   newState <- encounter s monster
   if newState ^. monsterHP == 0
     then do
-      putStrLn $ "You killed the " ++ monster ^. monsterName
+      killMessage monster
       gauntlet (record + 1) newState
     else do
       if s ^. (character . hp) <= 0
