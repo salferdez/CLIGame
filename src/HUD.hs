@@ -32,6 +32,7 @@ actionMessage s =
   do
     putStrLn "What do you do? ATTACK or RUN?"
     putStr ("[" ++ s ^. (character . name) ++ ": " ++ show (s ^. (character . hp)) ++ "/100]> ")
+    -- Flushes to stdout just in case, sometimes it only printed one of the messages
     hFlush stdout
 
 playerAttackMessage :: Int -> IO ()

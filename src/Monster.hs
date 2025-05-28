@@ -44,17 +44,6 @@ data Monster = Monster
 
 makeLenses ''Monster
 
--- | Mummy instance
-goblin :: Monster
-goblin =
-  Monster
-    { _monsterName = "Goblin",
-      _minHP = 5,
-      _maxHP = 8,
-      _minMonsterDamage = 3,
-      _maxMonsterDamage = 9
-    }
-
 -- | Splits string in list of strings according to a delimiter (char)
 splitOn :: Char -> String -> [String]
 splitOn delim s = foldr go [""] s
