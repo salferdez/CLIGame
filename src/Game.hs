@@ -43,17 +43,6 @@ import System.Directory (renameFile)
 import System.Random (randomRIO)
 import Text.Read (readMaybe)
 
--- | Just for ghci testing
-mummyCharacter :: Character
-mummyCharacter =
-  Character
-    {
-    }
-
--- | ghci testing
-mummyState :: GameState
-mummyState = GameState {_character = mummyCharacter, _monsterHP = 0}
-
 -- | Used for calculating random damage or hp
 valInRange :: Int -> Int -> IO Int
 valInRange start end = randomRIO (start, end)
