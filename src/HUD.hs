@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK show-extensions #-}
 
 -- |
--- Module      :  CLIGame.Character
+-- Module      :  CLIGame.HUD
 -- Maintainer  :  Salvador Fernández <salferdez@gmail.com>
 module HUD
   ( deathMessage,

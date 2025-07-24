@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 -- |
--- Module      :  CLIGame.Character
+-- Module      :  CLIGame.Monster
 -- Maintainer  :  Salvador Fernández <salferdez@gmail.com>
 module Monster
   ( Monster (..),
@@ -16,7 +16,6 @@ module Monster
     minMonsterDamage,
     maxMonsterDamage,
     -- End lenses
-    goblin,
     splitOn,
     parseMonster,
     parseMonsters,

@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- |
--- Module      :  CLIGame.Character
+-- Module      :  CLIGame.Game
 -- Maintainer  :  Salvador Fernández <salferdez@gmail.com>
 module Game
   ( valInRange,
