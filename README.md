@@ -11,7 +11,7 @@ There are still many features yet to be implemented. A list of some I've managed
 * Use of Haddock for generating documentation
 
 * Goals :
-  + Fix triple iteration of record string in Game.hs(149:175). Generalize parsing
+  + Fix triple iteration of record string in Game.hs (149:175). Generalize parsing
   + Implementing more suggested features
   + Tidying up the IO puddle: extracting pure functions
   + Command algebraic data type for simplified parsing
