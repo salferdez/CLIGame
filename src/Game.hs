@@ -24,7 +24,6 @@ module Game
     gauntlet,
     loop,
     formatRecord,
-    parseRecords,
     writeRecord,
     readAndSortRecords,
     formatSortedRecord,
@@ -38,10 +37,10 @@ import Data.Maybe (mapMaybe)
 import Data.Ord (comparing)
 import GameState
 import HUD
+import MonadicParsing
 import Monster
 import System.Directory (renameFile)
 import System.Random (randomRIO)
-import Text.Read (readMaybe)
 
 -- | Used for calculating random damage or hp
 valInRange :: Int -> Int -> IO Int
@@ -146,34 +145,6 @@ formatRecord state kills = "RECORD || Character: " ++ charName ++ " Class: " ++ 
 writeRecord :: FilePath -> GameState -> Int -> IO ()
 writeRecord file state kills = appendFile file (formatRecord state kills ++ "\n")
 
--- Shouldn´t fail, handling error with Maybe just in case (instance of Show)
-extractName :: [String] -> Maybe String
-extractName words =
-  case dropWhile (/= "Character:") words of
-    (_ : name : _) -> Just name
-    _ -> Nothing
-
-extractClass :: [String] -> Maybe CharacterClass
-extractClass words =
-  case dropWhile (/= "Class:") words of
-    (_ : cls : _) -> readMaybe cls
-    _ -> Nothing
-
-extractKills :: [String] -> Maybe Int
-extractKills words =
-  case dropWhile (/= "Kills:") words of
-    (_ : kills : _) -> readMaybe kills
-    _ -> Nothing
-
--- | parseRecord extracts name, class, and kills from the input string (to be used in a line from file)
-parseRecords :: String -> Maybe (String, CharacterClass, Int)
-parseRecords line = do
-  let parts = words line
-  namePart <- extractName parts
-  classPart <- extractClass parts
-  killsPart <- extractKills parts
-  return (namePart, classPart, killsPart)
-
 -- | Convert parsed records (String, CharacterClass, Int) into GameState and apply formatRecord
 formatSortedRecord :: (String, CharacterClass, Int) -> String
 formatSortedRecord (name, characterClass, kills) =
@@ -191,21 +162,21 @@ formatSortedRecord (name, characterClass, kills) =
 -- | Read and sort records based on kills
 readAndSortRecords :: FilePath -> IO ()
 readAndSortRecords file = do
-  -- Read the file contents
   content <- readFile file
 
-  -- Parse the records (filter out failed parses) as [(String, CharacterClass, Int)]
-  let records = mapMaybe parseRecords (lines content)
+  -- Parse each line using the monadic parser
+  let tryParse line = case parse parseRecord line of
+        [(rec, "")] -> Just rec -- successful full parse
+        _ -> Nothing -- failed or leftover input
+      records = mapMaybe tryParse (lines content)
 
   -- Sort the records by kills in descending order
   let sortedRecords = sortBy (comparing (\(_, _, kills) -> negate kills)) records
 
-  -- Convert each (String, CharacterClass, Int) record into a formatted string
+  -- Convert to formatted strings
   let formattedRecords = map formatSortedRecord sortedRecords
 
-  -- Write to a temporary file
+  -- Write to a temporary file and rename
   let tempFile = file ++ ".tmp"
   writeFile tempFile (unlines formattedRecords)
-
-  -- Rename the temporary file to the original file, efectively modifying the original file (don't know if it's efficient)
   renameFile tempFile file
